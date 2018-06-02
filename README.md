@@ -1,4 +1,4 @@
-#Kafka Examples
+# Kafka Examples
 
 This repository contains small examples demonstrating Producer/Consumer API and Kafka Streams features.
 
