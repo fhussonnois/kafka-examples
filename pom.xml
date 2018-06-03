@@ -9,6 +9,7 @@
         <module>producer-advanced</module>
         <module>producer-interceptor</module>
         <module>producer-transactional</module>
+        <module>consumer-interceptor</module>
     </modules>
     
     <groupId>com.github.fhuss</groupId>
