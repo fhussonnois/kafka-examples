@@ -24,6 +24,7 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerInterceptor;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
+import org.apache.kafka.common.serialization.StringSerializer;
 
 import java.nio.charset.Charset;
 import java.util.HashMap;
@@ -31,7 +32,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class AuditInterceptor implements ProducerInterceptor {
+public class AuditProducerInterceptor<K, V> implements ProducerInterceptor<K, V> {
 
     private static final Charset CHARSET = Charset.forName("UTF-8");
 
@@ -60,7 +61,7 @@ public class AuditInterceptor implements ProducerInterceptor {
      * {@inheritDoc}
      */
     @Override
-    public ProducerRecord onSend(ProducerRecord record) {
+    public ProducerRecord onSend(ProducerRecord<K, V> record) {
         record.headers()
                 .add(TRACKING_CORRELATION_ID, CorrelationIdGenerator.getId())
                 .add(TRACKING_APPLICATION_ID, configs.getAuditApplicationId().getBytes(CHARSET))
@@ -82,10 +83,11 @@ public class AuditInterceptor implements ProducerInterceptor {
     private String getJsonTrackingMessage(RecordMetadata metadata) {
         return JSON_OPEN_BRACKET +
                 "\"" + "timestamp" + "\":\"" + Time.SYSTEM.milliseconds() + "\"" +
-                "\",producer\":" +
+                "\",client\":" +
                 JSON_OPEN_BRACKET +
                 "\"" + "clientId" + "\":\"" + originalsClientId + "\"" +
                 ",\"" + "applicationId" + "\":\"" + configs.getAuditApplicationId() + "\"" +
+                ",\"" + "type" + "\":\"producer\"" +
                 JSON_CLOSE_BRACKET +
                 ",\"record\":" +
                 JSON_OPEN_BRACKET +
@@ -135,6 +137,8 @@ public class AuditInterceptor implements ProducerInterceptor {
         copyConfigs.put(ProducerConfig.RETRIES_CONFIG, "0");
         copyConfigs.put(ProducerConfig.ACKS_CONFIG, "1");
         copyConfigs.put(ProducerConfig.MAX_BLOCK_MS_CONFIG, "0");
+        copyConfigs.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+        copyConfigs.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
 
         this.producer = new KafkaProducer<>(copyConfigs);
     }

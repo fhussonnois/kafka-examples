@@ -70,7 +70,7 @@ public class ProducerWithInterceptor {
         props.put(ProducerConfig.ACKS_CONFIG, "1");
 
         // Configure interceptor and attached configuration.
-        props.put(ProducerConfig.INTERCEPTOR_CLASSES_CONFIG, AuditInterceptor.class.getName());
+        props.put(ProducerConfig.INTERCEPTOR_CLASSES_CONFIG, AuditProducerInterceptor.class.getName());
         props.put(AuditInterceptorConfig.AUDIT_TOPIC_CONFIG, "tracking-clients");
         props.put(AuditInterceptorConfig.AUDIT_APPLICATION_ID_CONFIG, "kafka-clients-examples");
         return props;
