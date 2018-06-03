@@ -11,11 +11,11 @@ This repository contains small examples demonstrating Producer/Consumer API and 
 
 ### Producer-Advanced
 
-Complete example demonstrating how to implement a fallback mechanism using the Callback interface in order to don't loss any record even in case of cluster failure.
+Complete example demonstrating how to implement a failover mechanism using the Callback interface in order to don't loss any record even in case of cluster failure.
 
 ### Producer-Interceptor
 
-* `ProducerWithInterceptor` : Demonstrates how to implement a custom interceptor in order to track all records being sent.
+* `ProducerWithInterceptor` : Demonstrates how to implement a custom producer interceptor in order to track all records being sent.
 
 ### Producer Transactional
 
@@ -23,7 +23,9 @@ Complete example demonstrating how to implement a fallback mechanism using the C
 
 ## Consumer API
 
-Work in progress!
+### Consumer-Interceptor
+
+* `ConsumerWithInterceptor` : Demonstrates how to implement a custom consumer interceptor in order to track all records being fetched.
 
 ## Kafka Stream 
 

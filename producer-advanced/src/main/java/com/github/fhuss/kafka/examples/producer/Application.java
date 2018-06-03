@@ -16,7 +16,7 @@
  */
 package com.github.fhuss.kafka.examples.producer;
 
-import com.github.fhuss.kafka.examples.producer.services.FileProducerFallback;
+import com.github.fhuss.kafka.examples.producer.services.FileProducerFailover;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
@@ -55,13 +55,14 @@ public class Application {
         }));
 
         KafkaProducer<String, String> producer = null;
-        FileProducerFallback<String, String> fallback = null;
+        FileProducerFailover<String, String> fallback = null;
         try {
             // Create a new Producer with properties required to be idempotent.
-            producer = new KafkaProducer<>(newIdempotentProducerConfig());
+            final Properties configs = newIdempotentProducerConfig("localhost:9092");
+            producer = new KafkaProducer<>(configs);
 
-            // Create a FileProducerFallback to log records on filesystem
-            fallback = new FileProducerFallback<>(TEMP_DIR + "/kafka-records.json");
+            // Create a FileProducerFailover to log records on filesystem
+            fallback = new FileProducerFailover<>(TEMP_DIR + "/kafka-records.json");
 
             ProducerService<String, String> service = new ProducerService<>(producer, fallback, false);
             LOG.info("Starting to produce records into topic {}", TOPIC);
@@ -87,9 +88,9 @@ public class Application {
 
     }
 
-    private static Properties newIdempotentProducerConfig() {
+    private static Properties newIdempotentProducerConfig(final String bootstrapServer) {
         Properties props = new Properties();
-        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServer);
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         props.put(ProducerConfig.ACKS_CONFIG, "all");

@@ -46,7 +46,7 @@ public class AvroUtils {
             LOG.error("Can't encode generic record into json {}", e.getMessage());
         }
 
-        // we fallback to toString method that is supposed to provide a valid JSON
+        // we failover to toString method that is supposed to provide a valid JSON
         // representation of the record.
         // However the record will not be valid to be read thought JSONDecoder class.
         return record.toString();

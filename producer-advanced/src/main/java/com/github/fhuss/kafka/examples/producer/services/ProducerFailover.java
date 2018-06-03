@@ -19,12 +19,13 @@ package com.github.fhuss.kafka.examples.producer.services;
 import org.apache.kafka.clients.producer.ProducerRecord;
 
 /**
- * Default interface to fallback on fail record write.
+ * Default interface used to write {@link ProducerRecord} to a failover storage
+ * in case of a producer not retriable exception.
  *
  * @param <K>   the record-key type.
  * @param <V>   the record-value type.
  */
-public interface ProducerFallback<K, V> {
+public interface ProducerFailover<K, V> {
 
     /**
      * This method should invoked from a producer {@link org.apache.kafka.clients.producer.Callback}
@@ -32,17 +33,17 @@ public interface ProducerFallback<K, V> {
      *
      * @param record  the record that cannot be sent.
      */
-    void fallback(final ProducerRecord<K, V> record);
+    void failover(final ProducerRecord<K, V> record);
 
     /**
-     * Default {@link ProducerFallback} implementation that print records on System.out.
+     * Default {@link ProducerFailover} implementation that print records on System.out.
      *
      * @param <K>   the record-key type.
      * @param <V>   the record-value type.
      */
-    class LogProducerFallback<K, V> implements ProducerFallback<K, V> {
+    class LogProducerFailover<K, V> implements ProducerFailover<K, V> {
         @Override
-        public void fallback(final ProducerRecord<K, V> record) {
+        public void failover(final ProducerRecord<K, V> record) {
             System.out.println(record);
         }
     }

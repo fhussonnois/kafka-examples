@@ -39,27 +39,27 @@ import java.util.concurrent.TimeUnit;
 
 import static com.github.fhuss.kafka.examples.producer.internal.AvroUtils.convertGenericRecordToJson;
 
-public class FileProducerFallback<K, V> implements ProducerFallback<K, V>, Closeable {
+public class FileProducerFailover<K, V> implements ProducerFailover<K, V>, Closeable {
 
-    private static final Logger LOG = LogManager.getLogger(FileProducerFallback.class.getName());
+    private static final Logger LOG = LogManager.getLogger(FileProducerFailover.class.getName());
 
     private FallbackWriter writer;
 
     /**
-     * Creates a new {@link FileProducerFallback} instance.
+     * Creates a new {@link FileProducerFailover} instance.
      *
      * @param path  the path of the file used to write records.
      */
-    public FileProducerFallback(final String path) throws IOException {
+    public FileProducerFailover(final String path) throws IOException {
         this(Paths.get(path));
     }
 
     /**
-     * Creates a new {@link FileProducerFallback} instance.
+     * Creates a new {@link FileProducerFailover} instance.
      *
      * @param path  the path of the file used to write records.
      */
-    private FileProducerFallback(final Path path) throws IOException {
+    private FileProducerFailover(final Path path) throws IOException {
         Objects.requireNonNull(path, "Path cannot be null");
         Files.createDirectories(path.getParent());
         final String parent = path.getParent().toAbsolutePath().toString();
@@ -71,7 +71,7 @@ public class FileProducerFallback<K, V> implements ProducerFallback<K, V>, Close
      * {@inheritDoc}
      */
     @Override
-    public void fallback(ProducerRecord<K, V> record) {
+    public void failover(ProducerRecord<K, V> record) {
         String toWrite = null;
         try {
             V value = record.value();
@@ -132,7 +132,7 @@ public class FileProducerFallback<K, V> implements ProducerFallback<K, V>, Close
          */
         @Override
         public void run() {
-            LOG.info("Starting fallback-file cleaner thread");
+            LOG.info("Starting failover-file cleaner thread");
             while (!isClosed()) {
                 try {
                     maybeRollFile();
@@ -143,7 +143,7 @@ public class FileProducerFallback<K, V> implements ProducerFallback<K, V>, Close
                 } catch (InterruptedException e) {
                     LOG.error("Unexpected InterruptedException, ignoring: ", e);
                 } catch (Exception e) {
-                    LOG.warn("Unexpected error occurred while rolling fallback file : {}", writerPath.toString());
+                    LOG.warn("Unexpected error occurred while rolling failover file : {}", writerPath.toString());
                 }
             }
             LOG.info("Fallback-file cleaner thread stopped");
@@ -154,7 +154,7 @@ public class FileProducerFallback<K, V> implements ProducerFallback<K, V>, Close
         }
 
         void write(final String record) throws IOException {
-            if (isClosed()) throw new IllegalStateException("Cannot write fallback file after close");
+            if (isClosed()) throw new IllegalStateException("Cannot write failover file after close");
             long now = Times.now();
             synchronized (mut) {
                 maybeRollFile();
@@ -173,7 +173,7 @@ public class FileProducerFallback<K, V> implements ProducerFallback<K, V>, Close
         private void maybeRollFile() throws IOException {
             long now = Times.now();
             if (now - lastAppend > 60 * 1000 && writer != null) {
-                LOG.info("Rolling fallback file : {}", "");
+                LOG.info("Rolling failover file : {}", "");
                 synchronized (mut) {
                     writer.close();
                     writer = null;
@@ -190,7 +190,7 @@ public class FileProducerFallback<K, V> implements ProducerFallback<K, V>, Close
                 String filename = String.format("%s-%05d-%s", date, index, this.baseFilename);
                 Path fallbackPath = Paths.get(this.baseDirectory, filename);
                 if (!Files.exists(fallbackPath)) {
-                    LOG.info("Creating new fallback file : {}", fallbackPath);
+                    LOG.info("Creating new failover file : {}", fallbackPath);
                     Files.createFile(fallbackPath);
                     path = fallbackPath;
                 } else {
@@ -205,14 +205,14 @@ public class FileProducerFallback<K, V> implements ProducerFallback<K, V>, Close
          */
         @Override
         public void close() throws IOException {
-            LOG.info("Closing FileProducerFallback service");
+            LOG.info("Closing FileProducerFailover service");
             shutdownLatch.countDown();
             if (writer != null) {
                 synchronized (mut) {
                     writer.close();
                 }
             }
-            LOG.info("FileProducerFallback service close");
+            LOG.info("FileProducerFailover service close");
         }
     }
 }

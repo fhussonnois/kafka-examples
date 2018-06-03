@@ -16,7 +16,7 @@
  */
 package com.github.fhuss.kafka.examples.producer;
 
-import com.github.fhuss.kafka.examples.producer.services.ProducerFallback;
+import com.github.fhuss.kafka.examples.producer.services.ProducerFailover;
 import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -42,7 +42,7 @@ public class ProducerService<K, V> {
 
     private boolean closeOnError;
 
-    private final ProducerFallback<K, V> fallback;
+    private final ProducerFailover<K, V> fallback;
 
     private AtomicBoolean closed = new AtomicBoolean(false);
 
@@ -50,11 +50,11 @@ public class ProducerService<K, V> {
      * Creates a new {@link ProducerService} instance.
      *
      * @param producer      the Kafka client producer to use
-     * @param fallback      the instance of {@link ProducerFallback} to use in case of not retriable exception.
+     * @param fallback      the instance of {@link ProducerFailover} to use in case of not retriable exception.
      * @param closeOnError  close the producer on the first exception
      */
     ProducerService(final Producer<K, V> producer,
-                    final ProducerFallback<K, V> fallback,
+                    final ProducerFailover<K, V> fallback,
                     final boolean closeOnError) {
         this.producer = producer;
         this.closeOnError = closeOnError;
@@ -111,7 +111,7 @@ public class ProducerService<K, V> {
                     ProducerService.this.producer.close(0, TimeUnit.SECONDS);
                     closed.set(true);
                 }
-                fallback.fallback(record);
+                fallback.failover(record);
             }
         }
     }
