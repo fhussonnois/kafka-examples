@@ -8,7 +8,7 @@
         <module>producer</module>
         <module>producer-advanced</module>
         <module>producer-interceptor</module>
-        <module>producer-transactional</module>
+        <module>producer-twitter</module>
         <module>consumer-interceptor</module>
         <module>kafka-spring-producer</module>
         <module>kafka-spring-consumer</module>
